@@ -2419,7 +2419,7 @@ public:
 				ColumnCheckBox("Maximized", &pWnd->bMaximized);
 				ColumnCheckBox("Maximizable", &pWnd->bMaximizable);
 				ColumnCheckBox("Tiled", &pWnd->bTiled);
-				ColumnCheckBox("Action", &pWnd->bAction);
+				//ColumnCheckBox("Action", &pWnd->bAction); // bAction identity unverified in April 2026
 				ColumnCheckBox("Bring to top when clicked", &pWnd->bBringToTopWhenClicked);
 				ColumnCheckBox("Mouse over", &pWnd->MouseOver);
 
@@ -2644,7 +2644,7 @@ public:
 				ColumnCheckBox("Maximized", &pWnd->bMaximized);
 				ColumnCheckBox("Maximizable", &pWnd->bMaximizable);
 				ColumnCheckBox("Tiled", &pWnd->bTiled);
-				ColumnCheckBox("Action", &pWnd->bAction);
+				//ColumnCheckBox("Action", &pWnd->bAction); // bAction identity unverified in April 2026
 				ColumnCheckBox("Bring to top when clicked", &pWnd->bBringToTopWhenClicked);
 				ColumnCheckBox("Mouse over", &pWnd->MouseOver);
 
