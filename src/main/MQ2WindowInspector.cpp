@@ -2451,6 +2451,7 @@ public:
 
 				// Mouse over / fading stuff
 				ColumnCheckBox("Faded", &pWnd->Faded);
+				ColumnText("Last blink fade refresh time", "%d", pWnd->LastBlinkFadeRefreshTime);
 				ColumnText("Last time mouse over", "%d", pWnd->LastTimeMouseOver);
 				ColumnText("Fade delay", "%d", pWnd->FadeDelay);
 				ColumnText("Fade duration", "%d", pWnd->FadeDuration);
@@ -2473,12 +2474,12 @@ public:
 				if (ColumnTreeNode("Blink Properties", ""))
 				{
 					ColumnText("Blink fade frequency", "%d", pWnd->BlinkFadeFreq);
-					ColumnText("Last blink fade refresh time", "%d", pWnd->SavedAlpha);
+					ColumnText("Last blink fade refresh time", "%d", pWnd->LastBlinkFadeRefreshTime);
 					ColumnText("Blink fade duration", "%d", pWnd->BlinkFadeDuration);
 					ColumnText("Blink fade start time", "%d", pWnd->BlinkFadeStartTime);
 					ColumnText("Blink state", "%d", pWnd->BlinkState);
 					ColumnText("Blink start timer", "%d", pWnd->BlinkStartTimer);
-					ColumnText("Blink duration", "%d", pWnd->Unknown0x200);
+					ColumnText("Blink duration", "%d", pWnd->BlinkDuration);
 
 					ImGui::TreePop();
 				}
@@ -2676,6 +2677,7 @@ public:
 
 				// Mouse over / fading stuff
 				ColumnCheckBox("Faded", &pWnd->Faded);
+				ColumnText("Last blink fade refresh time", "%d", pWnd->LastBlinkFadeRefreshTime);
 				ColumnText("Last time mouse over", "%d", pWnd->LastTimeMouseOver);
 				ColumnText("Fade delay", "%d", pWnd->FadeDelay);
 				ColumnText("Fade duration", "%d", pWnd->FadeDuration);
