@@ -2460,7 +2460,7 @@ public:
 				// Transition effects
 				if (ColumnTreeNode("Transition Properties", ""))
 				{
-					ColumnText("Start alpha", "%d", pWnd->SavedAlpha);
+					ColumnText("Start alpha", "%d", pWnd->StartAlpha);
 					ColumnText("Target alpha", "%d", pWnd->TargetAlpha);
 					ColumnText("Transition start tick", "%d", pWnd->TransitionStartTick);
 					ColumnText("Transition duration", "%d", pWnd->TransitionDuration);
