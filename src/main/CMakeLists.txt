@@ -1,4 +1,4 @@
-﻿# Generated from MQ2Main.vcxproj
+# Generated from MQ2Main.vcxproj
 # This file is designed to work with add_subdirectory()
 
 # ---------------------------------------------------------------------
@@ -10,6 +10,41 @@ include("../Common.cmake")
 # vcpkg dependencies
 # ---------------------------------------------------------------------
 find_package(crashpad REQUIRED)
+
+# ---------------------------------------------------------------------
+# crashpad CRT fix: crashpadConfig.cmake uses find_library() which resolves
+# at configure time. In a multi-config generator (Visual Studio) with no
+# CMAKE_BUILD_TYPE, vcpkg's toolchain puts debug/ paths first in
+# CMAKE_PREFIX_PATH, so find_library picks debug CRT libs for all configs.
+# Fix: replace the unconditional debug-lib link with config-aware paths.
+# ---------------------------------------------------------------
+if(TARGET crashpad)
+    set(_crashpad_vcpkg_base "${CMAKE_BINARY_DIR}/vcpkg_installed/x64-windows-static")
+    # Remove the incorrectly-resolved (debug-path) static libs from crashpad's interface
+    get_target_property(_crashpad_iface crashpad INTERFACE_LINK_LIBRARIES)
+    if(_crashpad_iface)
+        set(_crashpad_fixed "")
+        foreach(_lib IN LISTS _crashpad_iface)
+            if(_lib MATCHES "debug[/\\\\]lib[/\\\\](base|client|common|util)\\.lib$")
+                # Skip - we'll re-add with proper debug/release split below
+            else()
+                list(APPEND _crashpad_fixed "${_lib}")
+            endif()
+        endforeach()
+        # Add config-aware generator expressions for the four crashpad static libs
+        foreach(_cpad_lib base client common util)
+            list(APPEND _crashpad_fixed
+                "$<$<CONFIG:Release>:${_crashpad_vcpkg_base}/lib/${_cpad_lib}.lib>"
+                "$<$<CONFIG:Debug>:${_crashpad_vcpkg_base}/debug/lib/${_cpad_lib}.lib>"
+            )
+        endforeach()
+        set_target_properties(crashpad PROPERTIES INTERFACE_LINK_LIBRARIES "${_crashpad_fixed}")
+    endif()
+    unset(_crashpad_iface)
+    unset(_crashpad_fixed)
+    unset(_crashpad_vcpkg_base)
+endif()
+
 find_package(fmt REQUIRED)
 find_package(wil REQUIRED)
 find_package(date REQUIRED)
@@ -19,9 +54,9 @@ find_package(unofficial-sqlite3 REQUIRED)
 find_package(unofficial-argon2 REQUIRED)
 find_package(dxsdk-d3dx REQUIRED)
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Header files
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 set(MQ2Main_HEADERS
     "../../contrib/args/args.hxx"
     "../../contrib/Blech/Blech.h"
@@ -118,9 +153,9 @@ set(MQ2Main_HEADERS
 
 source_groups("Header Files" ${MQ2Main_HEADERS})
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Other files
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 set(MQ2Main_OTHERFILES
     "MQ2Main.rc"
     "../MacroQuest.natvis"
@@ -132,18 +167,18 @@ set(MQ2Main_OTHERFILES
 
 source_group("Resource Files" FILES ${MQ2Main_OTHERFILES})
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Assembly files
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 set(MQ2Main_ASSEMBLY
     "AssemblyFunctions64.asm"
 )
 
 source_groups("Assembly Files" ${MQ2Main_ASSEMBLY})
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Source files
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 set(MQ2Main_SOURCES
     "../../contrib/mini-yaml/yaml/Yaml.cpp"
     "../common/HotKeys.cpp"
@@ -336,9 +371,9 @@ set_source_files_properties(
     PROPERTIES
         COMPILE_OPTIONS "/FI;pch.h")
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Target definition
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Library type depends on configuration
 if(MQ_STATIC_BUILD)
     set(LIB_TYPE STATIC)
@@ -355,9 +390,9 @@ add_library(MQ2Main ${LIB_TYPE}
 
 set_target_properties(MQ2Main PROPERTIES FOLDER "core")
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Output name customization
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 if(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
     if(MQ_STATIC_BUILD)
         set_target_properties(MQ2Main PROPERTIES OUTPUT_NAME
@@ -372,19 +407,19 @@ elseif(CMAKE_GENERATOR_PLATFORM STREQUAL "Win32")
     endif()
 endif()
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Apply props file configurations
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_Common_props(MQ2Main)
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Add NASM tool to ASM files
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 add_nasm_sources(${MQ2Main_ASSEMBLY})
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Link vcpkg dependencies
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_link_libraries(MQ2Main PRIVATE
     crashpad::crashpad
     fmt::fmt
@@ -397,14 +432,14 @@ target_link_libraries(MQ2Main PRIVATE
     Microsoft::D3DX9
 )
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Project dependencies
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_link_libraries(MQ2Main PRIVATE zep eqlib imgui routing)
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Preprocessor definitions
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_compile_definitions(MQ2Main PRIVATE
     "NOMINMAX"
     "MQ2MAIN_IMPL"
@@ -412,57 +447,57 @@ target_compile_definitions(MQ2Main PRIVATE
     "$<$<NOT:$<BOOL:${MQ_STATIC_BUILD}>>:MQ2MAIN_EXPORTS>"
 )
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Include directories
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_include_directories(MQ2Main PRIVATE
     "${CMAKE_SOURCE_DIR}/contrib/mini-yaml/yaml"
     "${CMAKE_SOURCE_DIR}/src/main"
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Compiler options
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_compile_options(MQ2Main PRIVATE
     "/EHsc"
 )
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Link libraries
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_link_libraries(MQ2Main PRIVATE
     "$<$<NOT:$<BOOL:${MQ_STATIC_BUILD}>>:${MQ2MainLibs}>"
 )
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Linker options
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 target_link_options(MQ2Main PRIVATE
     "$<$<STREQUAL:${CMAKE_GENERATOR_PLATFORM},x64>:$<$<NOT:$<BOOL:${MQ_STATIC_BUILD}>>:/BASE:0x030000000000>>"
     "$<$<STREQUAL:${CMAKE_GENERATOR_PLATFORM},Win32>:$<$<NOT:$<BOOL:${MQ_STATIC_BUILD}>>:/BASE:0x03000000>>"
 )
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # Precompiled header
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 set_source_files_properties(
     "../../contrib/mini-yaml/yaml/Yaml.cpp"    PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 target_precompile_headers(MQ2Main PRIVATE "pch.h")
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # PRE_BUILD events
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 
 add_custom_command(TARGET MQ2Main PRE_BUILD
     COMMAND powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "${CMAKE_SOURCE_DIR}/tools/build_scripts/MQ2Main_PreBuild.ps1" ${CMAKE_GENERATOR_PLATFORM}
     VERBATIM
 )
 
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 # POST_BUILD events
-# ---------------------------------------------------------------------
+# ---------------------------------------------------------------
 
 add_custom_command(TARGET MQ2Main POST_BUILD
     COMMAND powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "${CMAKE_SOURCE_DIR}/tools/build_scripts/MQ2Main_PostBuild.ps1" "${CMAKE_SOURCE_DIR}/data" "${CMAKE_BINARY_DIR}/bin/$<CONFIG>" ${CMAKE_GENERATOR_PLATFORM}

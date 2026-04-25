@@ -398,20 +398,8 @@ void Cmd_SwitchServer(SPAWNINFO* pChar, char* szLine)
 		WriteChatf("\ar[AutoLogin]\ax Invalid server name \ag%s\ax. Valid server names are:", szServer);
 		WriteChatColor(join(server_names, ", ").c_str());
 	}
-#else
-	// this is just a validity check, that's the only reason we have that set of server names
-	if (GetServerIDFromServerName(szServer) == ServerID::Invalid)
-	{
-		WriteChatf("\ar[AutoLogin]\ax Invalid server name \ag%s\ax. Valid server names are:", szServer);
-
-		std::vector<std::string_view> server_names;
-		std::transform(std::begin(eqlib::ServerIDArray), std::end(eqlib::ServerIDArray),
-			std::back_inserter(server_names), [](const ServerID id) { return GetServerNameFromServerID(id); });
-
-		WriteChatColor(join(server_names, ", ").c_str());
-	}
 #endif
-	else if (GetGameState() == GAMESTATE_INGAME && pChar
+	if (GetGameState() == GAMESTATE_INGAME && pChar
 		&& ci_equals(GetServerShortName(), szServer)
 		&& ci_equals(pChar->DisplayedName, szCharacter))
 	{
@@ -709,21 +697,28 @@ static bool DoesProfileMatchCurrentSession(const ProfileRecord& record)
 		&& (record.accountName.empty() || ci_equals(record.accountName, GetLoginName()));
 }
 
-PLUGIN_API void SetGameState(int GameState)
+PLUGIN_API void OnLoginFrontendEntered()
 {
-	// this works because we will always have a gamestate change after loading or unloading eqmain
-	// GAMESTATE_PRECHARSELECT when transitioning from character select to server select, and
-	// GAMESTATE_CHARSELECT when transitioning to character select from server select
 	if (s_joinServer != EQMain__LoginServerAPI__JoinServer)
 	{
-		if (s_joinServer != 0)
-			RemoveDetour(s_joinServer);
-
 		s_joinServer = EQMain__LoginServerAPI__JoinServer;
 
 		if (s_joinServer != 0)
 			EzDetour(s_joinServer, &LoginServer_Hook::JoinServer_Detour, &LoginServer_Hook::JoinServer_Trampoline);
 	}
+}
+
+PLUGIN_API void OnLoginFrontendExited()
+{
+	if (s_joinServer != 0)
+	{
+		RemoveDetour(s_joinServer);
+		s_joinServer = 0;
+	}
+}
+
+PLUGIN_API void SetGameState(int GameState)
+{
 
 	if (GameState == GAMESTATE_CHARSELECT)
 	{

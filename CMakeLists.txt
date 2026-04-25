@@ -239,6 +239,13 @@ project(MacroQuest
 find_package(detours REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
+
+# Add vcpkg library directories so #pragma comment(lib, ...) directives
+# in headers like ProtobufLibs.h can find installed libraries
+link_directories(
+    "$<$<CONFIG:Debug>:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib>"
+    "$<$<CONFIG:Release>:${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib>"
+)
 string(REPLACE "/D_WINDOWS" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 string(REPLACE "/DWIN32" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})

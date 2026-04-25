@@ -1957,15 +1957,6 @@ class CDisplay_Detours
 public:
 	void ZoneMainUI_Detour()
 	{
-#if IS_EXPANSION_LEVEL(EXPANSION_LEVEL_COTF)
-		if (GetServerIDFromServerName(GetServerShortName()) == ServerID::Invalid)
-		{
-			// unload
-			WriteChatf("MQ does not function on this server: %s -- UNLOADING", GetServerShortName());
-			DoCommand("/unload", false);
-		}
-#endif
-
 		PluginsEndZone();
 		ZoneMainUI_Trampoline();
 	}
