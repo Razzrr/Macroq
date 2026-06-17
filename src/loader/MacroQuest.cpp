@@ -160,7 +160,7 @@ void InitializeConsole()
 	{
 		// The logger already exists, so replace ring buffer sink with stdout sink.
 		auto logger = spdlog::default_logger();
-		
+
 		// Erase the ring buffer sink from the logger's list of sinks.
 		auto& sinks = logger->sinks();
 		sinks.erase(std::remove_if(sinks.begin(), sinks.end(), [](const auto& sink) { return sink == s_ringBufferSink; }), sinks.end());
@@ -689,15 +689,40 @@ void SetForegroundWindowInternal(HWND hWnd)
 {
 	if (IsWindow(hWnd))
 	{
-		if (IsIconic(hWnd))
-			ShowWindow(hWnd, SW_RESTORE);
-
-		if (!::SetForegroundWindow(hWnd) && !SendSetForegroundWindow(hWnd, gFocusProcessID))
+		if (::GetForegroundWindow() == hWnd)
 		{
-			SPDLOG_DEBUG("Failed to set foreground window. Doing it with min/restore.");
+			return;
+		}
 
-			ShowWindow(hWnd, SW_MINIMIZE);
-			ShowWindow(hWnd, SW_RESTORE);
+		DWORD fgPid = 0;
+		::GetWindowThreadProcessId(::GetForegroundWindow(), &fgPid);
+		const bool weAreForeground = (fgPid == GetCurrentProcessId());
+
+		if (weAreForeground)
+		{
+			// The launcher itself is foreground. We have privilege, so grant it to the
+			// target and ask it to foreground itself. Us foregrounding it has odd behavior.
+			DWORD targetPid = 0;
+			::GetWindowThreadProcessId(hWnd, &targetPid);
+			if (targetPid != 0)
+			{
+				::AllowSetForegroundWindow(targetPid);
+			}
+
+			if (!SendSelfForeground(hWnd))
+			{
+				SPDLOG_DEBUG("SendSelfForeground failed (no pipe connection for target's owning process).");
+			}
+		}
+		// If we don't have privilege then try to route via an EQ instance that does that does.
+		else if (!SendSetForegroundWindow(hWnd, gFocusProcessID))
+		{
+			SPDLOG_DEBUG("SendSetForegroundWindow failed (no foregrounded MQ process). Falling back to SendSelfMinRestore.");
+
+			if (!SendSelfMinRestore(hWnd))
+			{
+				SPDLOG_DEBUG("SendSelfMinRestore also failed (no pipe connection for target's owning process).");
+			}
 		}
 	}
 }

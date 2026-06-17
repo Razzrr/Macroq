@@ -41,6 +41,8 @@ void InitializePostOfficeImGui();
 void ShutdownPostOfficeImGui();
 
 bool SendSetForegroundWindow(HWND hWnd, uint32_t processID);
+bool SendSelfMinRestore(HWND hWnd);
+bool SendSelfForeground(HWND hWnd);
 void SendUnloadAllCommand();
 void SendForceUnloadAllCommand();
 
