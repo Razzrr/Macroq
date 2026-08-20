@@ -2500,7 +2500,7 @@ public:
 
 				ColumnCheckBox("Click Through", &pWnd->bClickThrough);
 				ColumnCheckBox("Click Through (to background)", &pWnd->bClickThroughToBackground);
-				ColumnCheckBox("Click Through Menu Status", &pWnd->bClickThroughMenuItemStatus);
+				ColumnCheckBox("Click Through Menu Status", pWnd->bClickThroughMenuItemStatus);
 				ColumnCheckBox("Click Through Menu Enabled", &pWnd->bShowClickThroughMenuItem);
 
 				ColumnCheckBox("Capture Events from Title", &pWnd->bCaptureTitle);
@@ -4180,7 +4180,7 @@ static void WindowProperties_SpellDisplayWindow(CSidlScreenWnd* pSidlWindow, ImG
 	ColumnText("Display Type", "%d", pWindow->SpellDisplayType);
 	ColumnElapsedTimestamp("Last Update Time", pWindow->LastUpdateTime - EQGetTime());
 #if IS_LIVE_CLIENT
-	ColumnText("Unknown", "%d", pWindow->Unknown);
+	ColumnText("CastAsLevel", "%d", pWindow->CastAsLevel);
 #endif
 }
 
