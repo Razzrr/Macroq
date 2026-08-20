@@ -25,8 +25,8 @@ if(TARGET crashpad)
     if(_crashpad_iface)
         set(_crashpad_fixed "")
         foreach(_lib IN LISTS _crashpad_iface)
-            if(_lib MATCHES "debug[/\\\\]lib[/\\\\](base|client|common|util)\\.lib$")
-                # Skip - we'll re-add with proper debug/release split below
+            if(_lib MATCHES "[/\\\\]lib[/\\\\](base|client|common|util)\\.lib$")
+                # Skip (matches either lib/ or debug/lib/) - re-added with proper debug/release split below
             else()
                 list(APPEND _crashpad_fixed "${_lib}")
             endif()

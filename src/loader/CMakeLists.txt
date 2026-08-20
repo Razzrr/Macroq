@@ -18,7 +18,7 @@ endif()
 find_package(spdlog REQUIRED)
 find_package(wil REQUIRED)
 find_package(date REQUIRED)
-find_package(curl REQUIRED)
+find_package(CURL REQUIRED)
 find_package(cpr REQUIRED)
 find_package(pe-parse REQUIRED)
 find_package(protobuf REQUIRED)
@@ -102,7 +102,7 @@ target_link_libraries(MacroQuest PRIVATE
     spdlog::spdlog
     WIL::WIL
     date::date
-    curl::curl
+    CURL::libcurl
     cpr::cpr
     pe-parse::pe-parse
     protobuf::libprotobuf
