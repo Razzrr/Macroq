@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <array>
+
 #include <glm/glm.hpp>
 #include "mq/base/Math.h"
 #include "mq/base/String.h"
